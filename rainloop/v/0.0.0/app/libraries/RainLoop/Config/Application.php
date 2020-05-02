@@ -99,6 +99,10 @@ class Application extends \RainLoop\Config\AbstractConfig
 	 */
 	public function SetPassword($sPassword)
 	{
+		if (function_exists('password_hash'))
+		{
+			return $this->Set('security', 'admin_password', password_hash($sPassword, PASSWORD_DEFAULT));
+		}
 		return $this->Set('security', 'admin_password', \md5(APP_SALT.$sPassword.APP_SALT));
 	}
 
@@ -112,8 +116,22 @@ class Application extends \RainLoop\Config\AbstractConfig
 		$sPassword = (string) $sPassword;
 		$sConfigPassword = (string) $this->Get('security', 'admin_password', '');
 
-		return 0 < \strlen($sPassword) &&
-			(($sPassword === $sConfigPassword && '12345' === $sConfigPassword) || \md5(APP_SALT.$sPassword.APP_SALT) === $sConfigPassword);
+		if (0 < strlen($sConfigPassword))
+		{
+			if (($sPassword === $sConfigPassword) && ('12345' === $sConfigPassword))  // password has not been set
+			{
+				return true;
+			}
+			if (32 == strlen($sConfigPassword))  // legacy md5 hash
+			{
+				return (\md5(APP_SALT.$sPassword.APP_SALT) === $sConfigPassword);
+			}
+			if (function_exists('password_verify'))  // secure hash
+			{
+				return password_verify($sPassword, $sConfigPassword);
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -169,7 +187,6 @@ class Application extends \RainLoop\Config\AbstractConfig
 				'login_background'	=> array(''),
 				'login_desc'		=> array(''),
 				'login_css'			=> array(''),
-				'login_powered'		=> array(true),
 
 				'user_css'			=> array(''),
 				'user_logo'			=> array(''),
@@ -198,7 +215,8 @@ class Application extends \RainLoop\Config\AbstractConfig
 
 				'custom_server_signature'	=> array('RainLoop'),
 				'x_frame_options_header'	=> array(''),
-
+				'x_xss_protection_header'	=> array('1; mode=block'),
+				
 				'openpgp'					=> array(false),
 
 				'admin_login'				=> array('admin', 'Login and password for web admin panel'),
@@ -218,6 +236,7 @@ class Application extends \RainLoop\Config\AbstractConfig
 				'allow_self_signed'		=> array(true, 'Allow self-signed certificates. Requires verify_certificate.'),
 				'cafile'			=> array('', 'Location of Certificate Authority file on local filesystem (/etc/ssl/certs/ca-certificates.crt)'),
 				'capath'			=> array('', 'capath must be a correctly hashed certificate directory. (/etc/ssl/certs/)'),
+				'client_cert'			=> array('', 'Location of client certificate file (pem format with private key) on local filesystem'),
 			),
 
 			'capa' => array(
@@ -298,6 +317,8 @@ Disabling this option is not recommended.'),
 				'time_offset' => array('0'),
 				'session_filter' => array(''),
 
+				'sentry_dsn' => array(''),
+
 				'filename' => array('log-{date:Y-m-d}.txt',
 					'Log filename.
 For security reasons, some characters are removed from filename.
@@ -338,7 +359,7 @@ Examples:
 			'social' => array(
 				'google_enable' => array(false, 'Google'),
 				'google_enable_auth' => array(false),
-				'google_enable_auth_fast' => array(false),
+				'google_enable_auth_gmail' => array(false),
 				'google_enable_drive' => array(false),
 				'google_enable_preview' => array(false),
 				'google_client_id' => array(''),

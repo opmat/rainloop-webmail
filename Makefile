@@ -49,16 +49,30 @@ logs-tx:
 rl-lint:
 	@docker-compose run --no-deps --rm node gulp lint
 rl-dev:
-	@docker-compose run --no-deps --rm node gulp
-rl-watch:
-	@docker-compose run --no-deps --rm node gulp watch
+	@docker-compose run --no-deps --rm node npm run watch-js
+rl-compile:
+	@docker-compose run --no-deps --rm node gulp build
+rl-compile-with-source:
+	@docker-compose run --no-deps --rm node gulp build --source
+rl-watch-css:
+	@docker-compose run --no-deps --rm node npm run watch-css
+rl-watch-js:
+	@docker-compose run --no-deps --rm node npm run watch-js
+
 rl-build:
 	@docker-compose run --no-deps --rm node gulp all
 rl-build-pro:
 	@docker-compose run --no-deps --rm node gulp all --pro
 
+yarn-install:
+	@docker-compose run --no-deps --rm node yarn install
+yarn-outdated:
+	@docker-compose run --no-deps --rm node yarn outdated
+yarn-upgrade:
+	@docker-compose run --no-deps --rm node yarn upgrade-interactive --exact --latest
+
 gpg:
 	docker run -it --rm -w=/var/www \
 		-v $(shell pwd)/.docker/.cache/.gnupg:/root/.gnupg \
 		-v $(shell pwd):/var/www \
-		ubuntu:latest bash
+		ubuntu:16.04 bash

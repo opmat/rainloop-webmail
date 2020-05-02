@@ -1,7 +1,6 @@
+import { componentExportHelper } from 'Component/Abstract';
+import { AbstractRadio } from 'Component/AbstractRadio';
 
-import {componentExportHelper} from 'Component/Abstract';
-import {AbstracRadio} from 'Component/AbstracRadio';
-
-class RadioComponent extends AbstracRadio {}
+class RadioComponent extends AbstractRadio {}
 
 export default componentExportHelper(RadioComponent, 'RadioComponent');

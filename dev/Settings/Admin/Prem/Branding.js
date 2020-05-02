@@ -1,23 +1,18 @@
-
 import _ from '_';
-import {settingsSaveHelperSimpleFunction, trim, boolToAjax} from 'Common/Utils';
-import {Magics} from 'Common/Enums';
+import { settingsSaveHelperSimpleFunction, trim } from 'Common/Utils';
+import { Magics } from 'Common/Enums';
 
 import Remote from 'Remote/Admin/Ajax';
 
-import {BrandingAdminSettings} from 'Settings/Admin/Branding';
+import { BrandingAdminSettings } from 'Settings/Admin/Branding';
 
-class BrandingPremAdminSettings extends BrandingAdminSettings
-{
+class BrandingPremAdminSettings extends BrandingAdminSettings {
 	onBuild(dom) {
 		super.onBuild(dom);
 
-		if (this.capa && this.capa() && !this.community)
-		{
+		if (this.capa && this.capa() && !this.community) {
 			_.delay(() => {
-
-				const
-					f1 = settingsSaveHelperSimpleFunction(this.loginLogo.trigger, this),
+				const f1 = settingsSaveHelperSimpleFunction(this.loginLogo.trigger, this),
 					f2 = settingsSaveHelperSimpleFunction(this.loginDescription.trigger, this),
 					f3 = settingsSaveHelperSimpleFunction(this.loginCss.trigger, this),
 					f4 = settingsSaveHelperSimpleFunction(this.userLogo.trigger, this),
@@ -94,16 +89,9 @@ class BrandingPremAdminSettings extends BrandingAdminSettings
 						'WelcomePageDisplay': trim(value)
 					});
 				});
-
-				this.loginPowered.subscribe((value) => {
-					Remote.saveAdminConfig(null, {
-						'LoginPowered': boolToAjax(value)
-					});
-				});
-
 			}, Magics.Time50ms);
 		}
 	}
 }
 
-export {BrandingPremAdminSettings, BrandingPremAdminSettings as default};
+export { BrandingPremAdminSettings, BrandingPremAdminSettings as default };

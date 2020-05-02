@@ -1,20 +1,16 @@
-
-/* global RL_COMMUNITY */
-
 import _ from '_';
 import ko from 'ko';
 
-import {Magics} from 'Common/Enums';
-import {settingsSaveHelperSimpleFunction, trim} from 'Common/Utils';
-import {i18n, trigger as translatorTrigger} from 'Common/Translator';
+import { Magics } from 'Common/Enums';
+import { settingsSaveHelperSimpleFunction, trim } from 'Common/Utils';
+import { i18n, trigger as translatorTrigger } from 'Common/Translator';
 
 import Remote from 'Remote/Admin/Ajax';
 import AppStore from 'Stores/Admin/App';
 
-import {settingsGet} from 'Storage/Settings';
+import { settingsGet } from 'Storage/Settings';
 
-class BrandingAdminSettings
-{
+class BrandingAdminSettings {
 	constructor() {
 		this.capa = AppStore.prem;
 
@@ -35,20 +31,18 @@ class BrandingAdminSettings
 		this.welcomePageDisplay.options = ko.computed(() => {
 			translatorTrigger();
 			return [
-				{optValue: 'none', optText: i18n('TAB_BRANDING/OPTION_WELCOME_PAGE_DISPLAY_NONE')},
-				{optValue: 'once', optText: i18n('TAB_BRANDING/OPTION_WELCOME_PAGE_DISPLAY_ONCE')},
-				{optValue: 'always', optText: i18n('TAB_BRANDING/OPTION_WELCOME_PAGE_DISPLAY_ALWAYS')}
+				{ optValue: 'none', optText: i18n('TAB_BRANDING/OPTION_WELCOME_PAGE_DISPLAY_NONE') },
+				{ optValue: 'once', optText: i18n('TAB_BRANDING/OPTION_WELCOME_PAGE_DISPLAY_ONCE') },
+				{ optValue: 'always', optText: i18n('TAB_BRANDING/OPTION_WELCOME_PAGE_DISPLAY_ALWAYS') }
 			];
 		});
 
-		this.loginPowered = ko.observable(!!settingsGet('LoginPowered'));
 		this.community = RL_COMMUNITY || AppStore.community();
 	}
 
 	onBuild() {
 		_.delay(() => {
-			const
-				f1 = settingsSaveHelperSimpleFunction(this.title.trigger, this),
+			const f1 = settingsSaveHelperSimpleFunction(this.title.trigger, this),
 				f2 = settingsSaveHelperSimpleFunction(this.loadingDesc.trigger, this),
 				f3 = settingsSaveHelperSimpleFunction(this.faviconUrl.trigger, this);
 
@@ -73,4 +67,4 @@ class BrandingAdminSettings
 	}
 }
 
-export {BrandingAdminSettings, BrandingAdminSettings as default};
+export { BrandingAdminSettings, BrandingAdminSettings as default };

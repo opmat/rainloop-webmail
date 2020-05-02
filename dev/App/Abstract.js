@@ -1,4 +1,3 @@
-
 import window from 'window';
 import $ from '$';
 import _ from '_';
@@ -7,20 +6,21 @@ import key from 'key';
 import ssm from 'ssm';
 
 import {
-	$win, $html, $doc,
-	startMicrotime, leftPanelDisabled, leftPanelType,
-	sUserAgent, bMobileDevice, bAnimationSupported
+	$win,
+	$html,
+	$doc,
+	leftPanelDisabled,
+	leftPanelType,
+	sUserAgent,
+	bMobileDevice,
+	bAnimationSupported
 } from 'Common/Globals';
 
-import {
-	noop, isNormal, pString, inArray, microtime, timestamp,
-	detectDropdownVisibility, windowResizeCallback
-} from 'Common/Utils';
+import { isNormal, pString, detectDropdownVisibility, windowResizeCallback } from 'Common/Utils';
 
-import {KeyState, Magics} from 'Common/Enums';
-import {root, rootAdmin, rootUser, populateAuthSuffix} from 'Common/Links';
-import {initOnStartOrLangChange, initNotificationLanguage} from 'Common/Translator';
-import {toggle as toggleCmd} from 'Common/Cmd';
+import { KeyState, Magics } from 'Common/Enums';
+import { root, rootAdmin, rootUser, populateAuthSuffix } from 'Common/Links';
+import { initOnStartOrLangChange, initNotificationLanguage } from 'Common/Translator';
 import * as Events from 'Common/Events';
 import * as Settings from 'Storage/Settings';
 
@@ -28,16 +28,14 @@ import LanguageStore from 'Stores/Language';
 import ThemeStore from 'Stores/Theme';
 import SocialStore from 'Stores/Social';
 
-import {routeOff, setHash} from 'Knoin/Knoin';
-import {AbstractBoot} from 'Knoin/AbstractBoot';
+import { routeOff, setHash } from 'Knoin/Knoin';
+import { AbstractBoot } from 'Knoin/AbstractBoot';
 
-class AbstractApp extends AbstractBoot
-{
+class AbstractApp extends AbstractBoot {
 	/**
 	 * @param {RemoteStorage|AdminRemoteStorage} Remote
 	 */
-	constructor(Remote)
-	{
+	constructor() {
 		super();
 
 		this.googlePreviewSupportedCache = null;
@@ -47,49 +45,24 @@ class AbstractApp extends AbstractBoot
 
 		this.iframe = $('<iframe class="internal-hiddden" />').appendTo('body');
 
-		$win.on('error', (event) => {
-			if (event && event.originalEvent && event.originalEvent.message &&
-				-1 === inArray(event.originalEvent.message, [
-					'Script error.', 'Uncaught Error: Error calling method on NPObject.'
-				]))
-			{
-				const time = timestamp();
-				if (this.lastErrorTime >= time)
-				{
-					return;
-				}
-
-				this.lastErrorTime = time;
-
-				Remote.jsError(
-					noop,
-					event.originalEvent.message,
-					event.originalEvent.filename,
-					event.originalEvent.lineno,
-					window.location && window.location.toString ? window.location.toString() : '',
-					$html.attr('class'),
-					microtime() - startMicrotime
-				);
-			}
-		});
-
 		$win.on('resize', () => {
 			Events.pub('window.resize');
 		});
 
-		Events.sub('window.resize', _.throttle(() => {
-			const
-				iH = $win.height(),
-				iW = $win.height();
+		Events.sub(
+			'window.resize',
+			_.throttle(() => {
+				const iH = $win.height(),
+					iW = $win.height();
 
-			if ($win.__sizes[0] !== iH || $win.__sizes[1] !== iW)
-			{
-				$win.__sizes[0] = iH;
-				$win.__sizes[1] = iW;
+				if ($win.__sizes[0] !== iH || $win.__sizes[1] !== iW) {
+					$win.__sizes[0] = iH;
+					$win.__sizes[1] = iW;
 
-				Events.pub('window.resize.real');
-			}
-		}, Magics.Time50ms));
+					Events.pub('window.resize.real');
+				}
+			}, Magics.Time50ms)
+		);
 
 		// DEBUG
 		//		Events.sub({
@@ -101,32 +74,28 @@ class AbstractApp extends AbstractBoot
 		//			}
 		//		});
 
-		$doc.on('keydown', (event) => {
-			if (event && event.ctrlKey)
-			{
-				$html.addClass('rl-ctrl-key-pressed');
-			}
-		}).on('keyup', (event) => {
-			if (event && !event.ctrlKey)
-			{
-				$html.removeClass('rl-ctrl-key-pressed');
-			}
-		});
+		$doc
+			.on('keydown', (event) => {
+				if (event && event.ctrlKey) {
+					$html.addClass('rl-ctrl-key-pressed');
+				}
+			})
+			.on('keyup', (event) => {
+				if (event && !event.ctrlKey) {
+					$html.removeClass('rl-ctrl-key-pressed');
+				}
+			});
 
-		$doc.on('mousemove keypress click', _.debounce(() => {
-			Events.pub('rl.auto-logout-refresh');
-		}, Magics.Time5s));
+		$doc.on(
+			'mousemove keypress click',
+			_.debounce(() => {
+				Events.pub('rl.auto-logout-refresh');
+			}, Magics.Time5s)
+		);
 
 		key('esc, enter', KeyState.All, () => {
 			detectDropdownVisibility();
 		});
-
-		if (Settings.appSettingsGet('allowCmdInterface'))
-		{
-			key('ctrl+shift+`', KeyState.All, () => {
-				toggleCmd();
-			});
-		}
 	}
 
 	remote() {
@@ -146,17 +115,13 @@ class AbstractApp extends AbstractBoot
 	 * @returns {boolean}
 	 */
 	download(link) {
-
-		if (sUserAgent && (-1 < sUserAgent.indexOf('chrome') || -1 < sUserAgent.indexOf('chrome')))
-		{
+		if (sUserAgent && (-1 < sUserAgent.indexOf('chrome') || -1 < sUserAgent.indexOf('chrome'))) {
 			const oLink = window.document.createElement('a');
 			oLink.href = link;
 
-			if (window.document && window.document.createEvent)
-			{
+			if (window.document && window.document.createEvent) {
 				const oE = window.document.createEvent.MouseEvents;
-				if (oE && oE.initEvent && oLink.dispatchEvent)
-				{
+				if (oE && oE.initEvent && oLink.dispatchEvent) {
 					oE.initEvent('click', true, true);
 					oLink.dispatchEvent(oE);
 					return true;
@@ -164,13 +129,10 @@ class AbstractApp extends AbstractBoot
 			}
 		}
 
-		if (bMobileDevice)
-		{
+		if (bMobileDevice) {
 			window.open(link, '_self');
 			window.focus();
-		}
-		else
-		{
+		} else {
 			this.iframe.attr('src', link);
 			// window.document.location.href = link;
 		}
@@ -182,10 +144,9 @@ class AbstractApp extends AbstractBoot
 	 * @returns {boolean}
 	 */
 	googlePreviewSupported() {
-		if (null === this.googlePreviewSupportedCache)
-		{
-			this.googlePreviewSupportedCache = !!Settings.settingsGet('AllowGoogleSocial') &&
-				!!Settings.settingsGet('AllowGoogleSocialPreview');
+		if (null === this.googlePreviewSupportedCache) {
+			this.googlePreviewSupportedCache =
+				!!Settings.settingsGet('AllowGoogleSocial') && !!Settings.settingsGet('AllowGoogleSocialPreview');
 		}
 
 		return this.googlePreviewSupportedCache;
@@ -195,9 +156,8 @@ class AbstractApp extends AbstractBoot
 	 * @param {string} title
 	 */
 	setWindowTitle(title) {
-		title = ((isNormal(title) && 0 < title.length) ? '' + title : '');
-		if (Settings.settingsGet('Title'))
-		{
+		title = isNormal(title) && 0 < title.length ? '' + title : '';
+		if (Settings.settingsGet('Title')) {
 			title += (title ? ' - ' : '') + Settings.settingsGet('Title');
 		}
 
@@ -212,8 +172,7 @@ class AbstractApp extends AbstractBoot
 	}
 
 	clearClientSideToken() {
-		if (window.__rlah_clear)
-		{
+		if (window.__rlah_clear) {
 			window.__rlah_clear();
 		}
 	}
@@ -222,8 +181,7 @@ class AbstractApp extends AbstractBoot
 	 * @param {string} token
 	 */
 	setClientSideToken(token) {
-		if (window.__rlah_set)
-		{
+		if (window.__rlah_set) {
 			window.__rlah_set(token);
 
 			Settings.settingsSet('AuthAccountHash', token);
@@ -237,58 +195,42 @@ class AbstractApp extends AbstractBoot
 	 * @param {boolean=} close = false
 	 */
 	loginAndLogoutReload(admin = false, logout = false, close = false) {
-
 		const inIframe = !!Settings.appSettingsGet('inIframe');
 		let customLogoutLink = pString(Settings.appSettingsGet('customLogoutLink'));
 
-		if (logout)
-		{
+		if (logout) {
 			this.clearClientSideToken();
 		}
 
-		if (logout && close && window.close)
-		{
+		if (logout && close && window.close) {
 			window.close();
 		}
 
 		customLogoutLink = customLogoutLink || (admin ? rootAdmin() : rootUser());
 
-		if (logout && window.location.href !== customLogoutLink)
-		{
+		if (logout && window.location.href !== customLogoutLink) {
 			_.delay(() => {
-
-				if (inIframe && window.parent)
-				{
+				if (inIframe && window.parent) {
 					window.parent.location.href = customLogoutLink;
-				}
-				else
-				{
+				} else {
 					window.location.href = customLogoutLink;
 				}
 
 				$win.trigger('rl.tooltips.diactivate');
-
 			}, Magics.Time100ms);
-		}
-		else
-		{
+		} else {
 			routeOff();
 			setHash(root(), true);
 			routeOff();
 
 			_.delay(() => {
-
-				if (inIframe && window.parent)
-				{
+				if (inIframe && window.parent) {
 					window.parent.location.reload();
-				}
-				else
-				{
+				} else {
 					window.location.reload();
 				}
 
 				$win.trigger('rl.tooltips.diactivate');
-
 			}, Magics.Time100ms);
 		}
 	}
@@ -298,7 +240,6 @@ class AbstractApp extends AbstractBoot
 	}
 
 	bootstart() {
-
 		// log('Ps' + 'ss, hac' + 'kers! The' + 're\'s not' + 'hing inte' + 'resting :' + ')');
 
 		Events.pub('rl.bootstart');
@@ -315,13 +256,10 @@ class AbstractApp extends AbstractBoot
 		ko.components.register('x-script', require('Component/Script').default);
 		// ko.components.register('svg-icon', require('Component/SvgIcon').default);
 
-		if (Settings.appSettingsGet('materialDesign') && bAnimationSupported)
-		{
+		if (Settings.appSettingsGet('materialDesign') && bAnimationSupported) {
 			ko.components.register('Checkbox', require('Component/MaterialDesign/Checkbox').default);
 			ko.components.register('CheckboxSimple', require('Component/Checkbox').default);
-		}
-		else
-		{
+		} else {
 			// ko.components.register('Checkbox', require('Component/Classic/Checkbox').default);
 			// ko.components.register('CheckboxSimple', require('Component/Classic/Checkbox').default);
 			ko.components.register('Checkbox', require('Component/Checkbox').default);
@@ -340,8 +278,7 @@ class AbstractApp extends AbstractBoot
 			leftPanelDisabled(false);
 		});
 
-		if (!mobile)
-		{
+		if (!mobile) {
 			$html.addClass('rl-desktop');
 
 			ssm.addState({
@@ -389,9 +326,7 @@ class AbstractApp extends AbstractBoot
 					$html.removeClass('ssm-state-desktop-large');
 				}
 			});
-		}
-		else
-		{
+		} else {
 			$html.addClass('ssm-state-mobile').addClass('rl-mobile');
 			Events.pub('ssm.mobile-enter');
 		}
@@ -414,4 +349,4 @@ class AbstractApp extends AbstractBoot
 	}
 }
 
-export {AbstractApp, AbstractApp as default};
+export { AbstractApp, AbstractApp as default };

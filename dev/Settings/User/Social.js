@@ -1,16 +1,14 @@
-
 import SocialStore from 'Stores/Social';
 
-import {getApp} from 'Helper/Apps/User';
+import { getApp } from 'Helper/Apps/User';
 
-import {command} from 'Knoin/Knoin';
+import { command } from 'Knoin/Knoin';
 
-class SocialUserSettings
-{
+class SocialUserSettings {
 	constructor() {
 		this.googleEnable = SocialStore.google.enabled;
 		this.googleEnableAuth = SocialStore.google.capa.auth;
-		this.googleEnableAuthFast = SocialStore.google.capa.authFast;
+		this.googleEnableAuthGmail = SocialStore.google.capa.authGmail;
 		this.googleEnableDrive = SocialStore.google.capa.drive;
 		this.googleEnablePreview = SocialStore.google.capa.preview;
 
@@ -33,8 +31,7 @@ class SocialUserSettings
 
 	@command((self) => !self.googleLoggined() && !self.googleActions())
 	connectGoogleCommand() {
-		if (!this.googleLoggined())
-		{
+		if (!this.googleLoggined()) {
 			getApp().googleConnect();
 		}
 	}
@@ -46,8 +43,7 @@ class SocialUserSettings
 
 	@command((self) => !self.facebookLoggined() && !self.facebookActions())
 	connectFacebookCommand() {
-		if (!this.facebookLoggined())
-		{
+		if (!this.facebookLoggined()) {
 			getApp().facebookConnect();
 		}
 	}
@@ -59,8 +55,7 @@ class SocialUserSettings
 
 	@command((self) => !self.twitterLoggined() && !self.twitterActions())
 	connectTwitterCommand() {
-		if (!this.twitterLoggined())
-		{
+		if (!this.twitterLoggined()) {
 			getApp().twitterConnect();
 		}
 	}
@@ -71,4 +66,4 @@ class SocialUserSettings
 	}
 }
 
-export {SocialUserSettings, SocialUserSettings as default};
+export { SocialUserSettings, SocialUserSettings as default };

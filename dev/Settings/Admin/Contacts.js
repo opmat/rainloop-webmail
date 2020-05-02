@@ -1,32 +1,24 @@
-
 import _ from '_';
 import ko from 'ko';
 
-import {
-	settingsSaveHelperSimpleFunction,
-	defautOptionsAfterRender,
-	inArray, trim, boolToAjax
-} from 'Common/Utils';
+import { settingsSaveHelperSimpleFunction, defautOptionsAfterRender, inArray, trim, boolToAjax } from 'Common/Utils';
 
-import {SaveSettingsStep, StorageResultType, Magics} from 'Common/Enums';
-import {i18n} from 'Common/Translator';
-import {settingsGet} from 'Storage/Settings';
+import { SaveSettingsStep, StorageResultType, Magics } from 'Common/Enums';
+import { i18n } from 'Common/Translator';
+import { settingsGet } from 'Storage/Settings';
 import Remote from 'Remote/Admin/Ajax';
-import {command} from 'Knoin/Knoin';
+import { command } from 'Knoin/Knoin';
 
-class ContactsAdminSettings
-{
+class ContactsAdminSettings {
 	constructor() {
 		this.defautOptionsAfterRender = defautOptionsAfterRender;
 		this.enableContacts = ko.observable(!!settingsGet('ContactsEnable'));
 		this.contactsSync = ko.observable(!!settingsGet('ContactsSync'));
 
-		const
-			supportedTypes = [],
+		const supportedTypes = [],
 			types = ['sqlite', 'mysql', 'pgsql'],
 			getTypeName = (name) => {
-				switch (name)
-				{
+				switch (name) {
 					case 'sqlite':
 						name = 'SQLite';
 						break;
@@ -42,54 +34,49 @@ class ContactsAdminSettings
 				return name;
 			};
 
-		if (settingsGet('SQLiteIsSupported'))
-		{
+		if (settingsGet('SQLiteIsSupported')) {
 			supportedTypes.push('sqlite');
 		}
-		if (settingsGet('MySqlIsSupported'))
-		{
+		if (settingsGet('MySqlIsSupported')) {
 			supportedTypes.push('mysql');
 		}
-		if (settingsGet('PostgreSqlIsSupported'))
-		{
+		if (settingsGet('PostgreSqlIsSupported')) {
 			supportedTypes.push('pgsql');
 		}
 
 		this.contactsSupported = 0 < supportedTypes.length;
 
 		this.contactsTypes = ko.observableArray([]);
-		this.contactsTypesOptions = this.contactsTypes.map((value) => {
-			const disabled = -1 === inArray(value, supportedTypes);
-			return {
-				'id': value,
-				'name': getTypeName(value) + (disabled ? ' (' + i18n('HINTS/NOT_SUPPORTED') + ')' : ''),
-				'disabled': disabled
-			};
-		});
+		this.contactsTypesOptions = ko.computed(() =>
+			_.map(this.contactsTypes(), (value) => {
+				const disabled = -1 === inArray(value, supportedTypes);
+				return {
+					'id': value,
+					'name': getTypeName(value) + (disabled ? ' (' + i18n('HINTS/NOT_SUPPORTED') + ')' : ''),
+					'disabled': disabled
+				};
+			})
+		);
 
 		this.contactsTypes(types);
 		this.contactsType = ko.observable('');
 
-		this.mainContactsType = ko.computed({
-			read: this.contactsType,
-			write: (value) => {
-				if (value !== this.contactsType())
-				{
-					if (-1 < inArray(value, supportedTypes))
-					{
-						this.contactsType(value);
-					}
-					else if (0 < supportedTypes.length)
-					{
-						this.contactsType('');
+		this.mainContactsType = ko
+			.computed({
+				read: this.contactsType,
+				write: (value) => {
+					if (value !== this.contactsType()) {
+						if (-1 < inArray(value, supportedTypes)) {
+							this.contactsType(value);
+						} else if (0 < supportedTypes.length) {
+							this.contactsType('');
+						}
+					} else {
+						this.contactsType.valueHasMutated();
 					}
 				}
-				else
-				{
-					this.contactsType.valueHasMutated();
-				}
-			}
-		}).extend({notify: 'always'});
+			})
+			.extend({ notify: 'always' });
 
 		this.contactsType.subscribe(() => {
 			this.testContactsSuccess(false);
@@ -136,19 +123,13 @@ class ContactsAdminSettings
 		this.testContactsError(false);
 		this.testContactsErrorMessage('');
 
-		if (StorageResultType.Success === result && data && data.Result && data.Result.Result)
-		{
+		if (StorageResultType.Success === result && data && data.Result && data.Result.Result) {
 			this.testContactsSuccess(true);
-		}
-		else
-		{
+		} else {
 			this.testContactsError(true);
-			if (data && data.Result)
-			{
+			if (data && data.Result) {
 				this.testContactsErrorMessage(data.Result.Message || '');
-			}
-			else
-			{
+			} else {
 				this.testContactsErrorMessage('');
 			}
 		}
@@ -164,8 +145,7 @@ class ContactsAdminSettings
 
 	onBuild() {
 		_.delay(() => {
-			const
-				f1 = settingsSaveHelperSimpleFunction(this.pdoDsnTrigger, this),
+			const f1 = settingsSaveHelperSimpleFunction(this.pdoDsnTrigger, this),
 				f3 = settingsSaveHelperSimpleFunction(this.pdoUserTrigger, this),
 				f4 = settingsSaveHelperSimpleFunction(this.pdoPasswordTrigger, this),
 				f5 = settingsSaveHelperSimpleFunction(this.contactsTypeTrigger, this);
@@ -211,4 +191,4 @@ class ContactsAdminSettings
 	}
 }
 
-export {ContactsAdminSettings, ContactsAdminSettings as default};
+export { ContactsAdminSettings, ContactsAdminSettings as default };

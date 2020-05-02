@@ -124,9 +124,11 @@ class ServiceActions
 			$sAction = $this->aPaths[2];
 		}
 
+		$this->oActions->SetIsAjax(true);
+
 		try
 		{
-			if ($this->oHttp->IsPost() && !in_array($sAction, array('JsInfo', 'JsError')) &&
+			if ($this->oHttp->IsPost() &&
 				$this->Config()->Get('security', 'csrf_protection', false) &&
 				$this->oHttp->GetPost('XToken', '') !== \RainLoop\Utils::GetCsrfToken())
 			{
@@ -211,6 +213,12 @@ class ServiceActions
 		if (\is_array($aResponseItem))
 		{
 			$aResponseItem['Time'] = (int) ((\microtime(true) - APP_START) * 1000);
+
+			$sUpdateToken = $this->oActions->GetUpdateAuthToken();
+			if ($sUpdateToken)
+			{
+				$aResponseItem['UpdateToken'] = $sUpdateToken;
+			}
 		}
 
 		$this->Plugins()->RunHook('filter.ajax-response', array($sAction, &$aResponseItem));
@@ -498,6 +506,7 @@ class ServiceActions
 				if (\method_exists($this->oActions, $sMethodName))
 				{
 					@\header('X-Raw-Action: '.$sMethodName, true);
+					@\header('Content-Security-Policy: script-src \'none\'; frame-src \'none\'; child-src \'none\'', true);
 
 					$sRawError = '';
 					$this->oActions->SetActionParams(array(
@@ -1293,7 +1302,7 @@ class ServiceActions
 
 		$this->oActions->Plugins()->CompileTemplate($aTemplates, $bAdmin);
 
-		$sHtml = '';
+		$sHtml = '<script id="rainloop-templates-id"></script>';
 		foreach ($aTemplates as $sName => $sFile)
 		{
 			$sName = \preg_replace('/[^a-zA-Z0-9]/', '', $sName);

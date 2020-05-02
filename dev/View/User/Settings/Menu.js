@@ -1,24 +1,22 @@
-
 import $ from '$';
 import key from 'key';
 
-import {KeyState} from 'Common/Enums';
-import {leftPanelDisabled} from 'Common/Globals';
-import {settings, inbox} from 'Common/Links';
-import {getFolderInboxName} from 'Common/Cache';
+import { KeyState } from 'Common/Enums';
+import { leftPanelDisabled } from 'Common/Globals';
+import { settings, inbox } from 'Common/Links';
+import { getFolderInboxName } from 'Common/Cache';
 
 import * as Settings from 'Storage/Settings';
 
-import {view, ViewType, setHash, settingsMenuKeysHendler} from 'Knoin/Knoin';
-import {AbstractViewNext} from 'Knoin/AbstractViewNext';
+import { view, ViewType, setHash, settingsMenuKeysHandler } from 'Knoin/Knoin';
+import { AbstractViewNext } from 'Knoin/AbstractViewNext';
 
 @view({
 	name: 'View/User/Settings/Menu',
 	type: ViewType.Left,
 	templateID: 'SettingsMenu'
 })
-class MenuSettingsUserView extends AbstractViewNext
-{
+class MenuSettingsUserView extends AbstractViewNext {
 	/**
 	 * @param {Object} screen
 	 */
@@ -33,14 +31,13 @@ class MenuSettingsUserView extends AbstractViewNext
 	}
 
 	onBuild(dom) {
-		if (this.mobile)
-		{
+		if (this.mobile) {
 			dom.on('click', '.b-settings-menu .e-item.selectable', () => {
 				leftPanelDisabled(true);
 			});
 		}
 
-		key('up, down', KeyState.Settings, settingsMenuKeysHendler($('.b-settings-menu .e-item', dom)));
+		key('up, down', KeyState.Settings, settingsMenuKeysHandler($('.b-settings-menu .e-item', dom)));
 	}
 
 	link(route) {
@@ -52,4 +49,4 @@ class MenuSettingsUserView extends AbstractViewNext
 	}
 }
 
-export {MenuSettingsUserView, MenuSettingsUserView as default};
+export { MenuSettingsUserView, MenuSettingsUserView as default };
